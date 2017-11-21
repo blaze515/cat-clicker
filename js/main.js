@@ -19,8 +19,14 @@ $(function () {
         getCat: function (catName) {
             var catJSON = localStorage.getItem(catName);
             var parsedJSON = JSON.parse(catJSON);
-            var cat = data.newCat(parsedJSON.name, parsedJSON.img, parsedJSON.clicks);
-            return cat;
+            return data.newCat(parsedJSON.name, parsedJSON.img, parsedJSON.clicks);
+        },
+
+        increaseCount: function (catName) {
+            var cat = data.getCat(catName);
+            cat.clicks += 1;
+            localStorage.setItem(cat.name, JSON.stringify(cat));
+            return cat.clicks;
         }
     };
 
@@ -28,55 +34,65 @@ $(function () {
     // View
     var view = {
         init: function (cats) {
-            $catSelectorElem = $('#cat-selector');
+            var $catSelectorElem = $('#cat-selector');
             for (var i = 0; i < cats.length; i++) {
-                var index = '' + i;
-                catStr = '<div class="col-md-12" id="' + cats[i].name + '">' + '<img class="thumbnail" src="' + cats[i].img + '">'
+                var catStr = '<div class="col-md-12" id="' + cats[i].name + '">' + '<img class="thumbnail" src="' + cats[i].img + '">'
                     + ' ' + '<button class="btn btn-info cat-btn" name="cat-select-btn" id="' + cats[i].name + '">' + cats[i].name + '</button></div>';
                 $catSelectorElem.append(catStr);
             }
-            $selectedCatHeaderElem = $('#selected-cat');
-            $catImgElem = $('#cat-img');
-            $catNumClicksElem = $('#clicks');
+            var $selectedCatHeaderElem = $('#selected-cat');
+            var $catImgElem = $('#cat-img');
+            var $catNumClicksElem = $('#clicks');
 
             // Set to first cat (Mike) as default
-            headerStr = 'Meet ' + cats[0].name;
+            var headerStr = 'Meet ' + cats[0].name;
             $selectedCatHeaderElem.text(headerStr);
             $catImgElem.attr("src", cats[0].img);
-            clicksStr = 'Number of clicks: ' + cats[0].clicks;
+            $catImgElem.attr("alt", cats[0].name);
+            var clicksStr = 'Number of clicks: ' + cats[0].clicks;
             $catNumClicksElem.text(clicksStr);
 
             // Setup button listener
-            $catButtonListener = $('.cat-btn');
+            var $catButtonListener = $('.cat-btn');
             $catButtonListener.click(function () {
-                    $currentCatElem = $(this);
-                    console.log("Current Cat ID: " + $currentCatElem.attr("id").toString());
-                    currentCat = octopus.getCat($currentCatElem.attr("id"));
+                    var $currentCatElem = $(this);
+                    var currentCat = octopus.getCat($currentCatElem.attr("id"));
                     view.changeCat(currentCat);
                 }
             );
+
+            // Setup cat clicker listener
+            $catImgElem.click(function(){
+               var $currentImgElem = $(this);
+               var catName = $currentImgElem.attr("alt");
+               // Increase the cat's count by one and return the current count
+               var updatedCount = octopus.updateCounter(catName);
+               // Update the count in the View
+               var clicksStr = 'Number of clicks: ' + updatedCount;
+               $catNumClicksElem.text(clicksStr);
+            });
         },
 
         changeCat: function (cat) {
-            console.log("got here");
-            console.log("value of cat.name" + cat.name);
-            $selectedCatHeaderElem = $('#selected-cat');
-            $catImgElem = $('#cat-img');
-            $catNumClicksElem = $('#clicks');
+            var $selectedCatHeaderElem = $('#selected-cat');
+            var $catImgElem = $('#cat-img');
+            var $catNumClicksElem = $('#clicks');
 
             // Set the cat to the selected cat
-            headerStr = 'Meet ' + cat.name;
+            var headerStr = 'Meet ' + cat.name;
             $selectedCatHeaderElem.text(headerStr);
             $catImgElem.attr("src", cat.img);
-            clicksStr = 'Number of clicks: ' + cat.clicks;
+            $catImgElem.attr("alt", cat.name);
+            var clicksStr = 'Number of clicks: ' + cat.clicks;
             $catNumClicksElem.text(clicksStr);
         }
     };
 
     // Octopus
     var octopus = {
+        // Create the array of cats and initialize the model and view
         init: function () {
-            catArray = [];
+            var catArray = [];
             catArray.push(data.newCat('Mike', 'img/mike.jpg', 0));
             catArray.push(data.newCat('Eleven', 'img/eleven.jpg', 0));
             catArray.push(data.newCat('Nancy', 'img/nancy.jpg', 0));
@@ -87,25 +103,16 @@ $(function () {
             view.init(catArray);
         },
 
+        // Get the cat from the model using the cat's name
         getCat: function (catName) {
-            console.log("Octopus cat name: " + catName);
-            cat = data.getCat(catName);
-            return cat;
+            return data.getCat(catName);
+        },
+
+        // Increase the count in the model by 1 and return the current count
+        updateCounter: function (catName) {
+            return data.increaseCount(catName);
         }
 
-        // $('#cat-pic').click(function(e) {
-        //     var $clickElem = $('#clicks');
-        //     count += 1;
-        //     $clickElem.text('Number of clicks: ' + count);
-        // })
-        //
-        // $('#cat-pic2').click(function(e) {
-        //     var $clickElem = $('#clicks');
-        //     count += 1;
-        //     $clickElem.text('Number of clicks: ' + count);
-        //
-        //
-        // })
     };
 
 
